@@ -1,0 +1,61 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" href="~/css/sidebar.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/Domapel.styles.css" asp-append-version="true" />
+
+</head>
+<body>
+    <div class="wrapper">
+        <nav id="sidebar">
+            <img src="@Url.Content("~/images/logo-domapel.png")" id="defaultImage" alt="Imagem padrão" style="max-width: 100%; height: auto; cursor: pointer;" />
+
+            <ul class="list-unstyled components">
+                <li>
+                    <a class="nav-link text-dark" asp-area="" asp-controller="Account" asp-action="Register">Novo usuário</a>
+                </li>
+                <li>
+                    <a class="nav-link text-dark" asp-area="" asp-controller="Product" asp-action="Index">Produtos</a>
+                </li>
+                <li>
+                    <a class="nav-link text-dark" asp-area="" asp-controller="Vendor" asp-action="Index">Vendedores</a>
+                </li>
+                <li>
+                    <a class="nav-link text-dark" asp-area="" asp-controller="Order" asp-action="Index">Pedidos</a>
+                </li>
+                <li>
+                    <a class="nav-link text-dark" asp-area="" asp-controller="Customer" asp-action="Index">Clientes</a>
+                </li>
+                <li>
+                    <a class="nav-link text-dark" asp-area="" asp-controller="PaymentMethod" asp-action="Index">Formas de pagamento</a>
+                </li> 
+                <li>
+                    <a class="nav-link text-dark" asp-area="" asp-controller="Comission" asp-action="Index">Comissões</a>
+                </li>
+            </ul>
+        </nav>
+
+        <div id="content">
+            <header>
+                <partial name="_LoginPartial" />
+            </header>
+
+            <main role="main" class="pb-3">
+                @RenderBody()
+            </main>
+        </div>
+    </div>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.min.js"></script>
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

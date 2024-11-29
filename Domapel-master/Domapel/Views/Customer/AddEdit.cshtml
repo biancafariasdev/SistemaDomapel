@@ -1,0 +1,243 @@
+﻿@model Domapel.Models.Customer
+@{
+    ViewData["Title"] = "Clientes";
+    Layout = "_Layout";
+}
+
+<input type="text" hidden value="@Model.CustomerId" id="customerId" />
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-12">
+            <h2>@(Model.CustomerId == 0 ? "Adicionar" : "Editar") Cliente</h2>
+            <br><br />
+            <form asp-action="AddEdit" method="post" enctype="multipart/form-data" id="customerForm">
+                <input type="hidden" asp-for="CustomerId" />
+
+                <div class="row">
+                    <div class="col-md-8">
+                        <div class="form-group">
+                            <label asp-for="CorporateName" class="control-label">Razão Social</label>
+                            <input asp-for="CorporateName" class="form-control" />
+                            <span asp-validation-for="CorporateName" class="text-danger"></span>
+                        </div>
+                    </div>
+                    <div class="col-md-8">
+                        <div class="form-group">
+                            <label asp-for="TradeName" class="control-label">Nome Fantasia</label>
+                            <input asp-for="TradeName" class="form-control" />
+                            <span asp-validation-for="TradeName" class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-2">
+                        <div class="form-group">
+                            <label asp-for="CNPJ" class="control-label"></label>
+                            <input asp-for="CNPJ" class="form-control" />
+                            <span asp-validation-for="CNPJ" class="text-danger"></span>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label asp-for="StateRegistration" class="control-label">Inscrição Estadual</label>
+                            <input asp-for="StateRegistration" class="form-control" />
+                            <span asp-validation-for="StateRegistration" class="text-danger"></span>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label asp-for="Phone" class="control-label">Telefone</label>
+                            <input asp-for="Phone" class="form-control" />
+                            <span asp-validation-for="Phone" class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-2">
+                        <div class="form-group">
+                            <label asp-for="CEP" class="control-label">CEP</label>
+                            <input asp-for="CEP" class="form-control" id="cep" />
+                            <span asp-validation-for="CEP" class="text-danger"></span>
+                        </div>
+                    </div>
+                    <div class="col-md-5">
+                        <div class="form-group">
+                            <label asp-for="Address" class="control-label">Endereço</label>
+                            <input asp-for="Address" class="form-control" id="address" />
+                            <span asp-validation-for="Address" class="text-danger"></span>
+                        </div>
+                    </div>
+                    <div class="col-md-1">
+                        <div class="form-group">
+                            <label asp-for="Number" class="control-label">Número</label>
+                            <input asp-for="Number" class="form-control" id="number" type="text" inputmode="numeric" />
+                            <span asp-validation-for="Number" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-2">
+                            <div class="form-group">
+                                <label asp-for="City" class="control-label">Cidade</label>
+                                <input asp-for="City" class="form-control" id="city" />
+                                <span asp-validation-for="City" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="col-md-2">
+                            <div class="form-group">
+                                <label asp-for="Complement" class="control-label">Complemento</label>
+                                <input asp-for="Complement" class="form-control" id="complement" />
+                                <span asp-validation-for="Complement" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label asp-for="Neighborhood" class="control-label">Bairro</label>
+                                <input asp-for="Neighborhood" class="form-control" id="neighborhood" />
+                                <span asp-validation-for="Neighborhood" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-1">
+                            <div class="form-group">
+                                <label asp-for="State" class="control-label">Estado</label>
+                                <input asp-for="State" class="form-control" id="state" />
+                                <span asp-validation-for="State" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label asp-for="Email" class="control-label" inputmode="email">E-mail</label>
+                            <input asp-for="Email" class="form-control" />
+                            <span asp-validation-for="Email" class="text-danger"></span>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label asp-for="VendorId" class="control-label">Vendedor</label>
+                            <select asp-for="VendorId" class="form-control" asp-items="@ViewBag.VendorId" id="vendorSelect">
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label asp-for="HasInvoice" class="control-label">Nota fiscal?</label>
+                            <select asp-for="HasInvoice" class="form-control">
+                                <option value="1">Sim</option>
+                                <option value="0">Não</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <br />
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                @if (string.IsNullOrEmpty(Model.ImagePath))
+                                {
+                                    <img src="@Url.Content("~/images/upload.png")" id="defaultImage" alt="Imagem padrão" style="max-width: 100%; height: auto; cursor: pointer;" />
+                                }
+                                else
+                                {
+                                    <img src="@Url.Content(ViewBag.ImagePath)" id="customerImage" alt="Imagem do Cliente" style="max-width: 100%; height: auto;" />
+                                }
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <br />
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div class="form-group">
+                                <label asp-for="ImagePath" class="control-label">Logo</label>
+                                <input asp-for="ImagePath" type="file" id="logoImage" name="logoImage" class="form-control-file" />
+                                <span asp-validation-for="ImagePath" class="text-danger"></span>
+                            </div>
+                            <button type="button" id="deleteImageButton" class="btn btn-danger">Excluir Imagem</button>
+                        </div>
+                    </div>
+                </div>
+                <br />
+                <button type="submit" class="btn btn-primary">@((Model.CustomerId == 0) ? "Adicionar" : "Salvar Alterações")</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            $('#cep').mask('00000-000');
+            $('#CNPJ').mask('00.000.000/0000-00', { reverse: true });
+            $('#Phone').mask('(00) 00000-0000');
+
+            $("#defaultImage, #customerImage").click(function () {
+                $("#logoImage").click();
+            });
+
+            $("#logoImage").change(function (event) {
+                const [file] = event.target.files;
+                if (file) {
+                    $("#customerImage, #defaultImage").attr("src", URL.createObjectURL(file));
+                }
+            });
+
+            $("#deleteImageButton").click(function () {
+                $("#logoImage").val("");
+                $("#customerImage").hide();
+                $("#defaultImage").attr("src", "@Url.Content("~/images/upload.png")").show();
+            });
+
+            if ($("#customerId").val() == "0") {
+                $("#number").val("");
+            }
+
+            $('#logoImage').change(function (event) {
+                const [file] = event.target.files;
+                if (file) {
+                    $("img").attr("src", URL.createObjectURL(file));
+                }
+            });
+
+            $("#cep").blur(function () {
+                var cep = $(this).val().replace(/\D/g, '');
+
+                if (cep != "") {
+                    var validacep = /^[0-9]{8}$/;
+
+                    if (validacep.test(cep)) {
+                        $.getJSON("https://viacep.com.br/ws/" + cep + "/json/", function (dados) {
+                            if (!("erro" in dados)) {
+                                $("#address").val(dados.logradouro);
+                                $("#neighborhood").val(dados.bairro);
+                                $("#state").val(dados.uf);
+                                $("#city").val(dados.localidade);
+                            } else {
+                                alert("CEP não encontrado.");
+                            }
+                        });
+                    } else {
+                        alert("Formato de CEP inválido.");
+                    }
+                }
+            });
+
+            // Validação do campo VendorId
+            $('#customerForm').submit(function (event) {
+                var vendorSelect = $('#vendorSelect');
+                if (vendorSelect.val() === "") {
+                    alert('Por favor, selecione um vendedor.');
+                    event.preventDefault(); // Impede o envio do formulário
+                }
+            });
+        });
+    </script>
+}

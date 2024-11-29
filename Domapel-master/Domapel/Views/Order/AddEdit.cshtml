@@ -1,0 +1,227 @@
+﻿@model Domapel.Models.ViewModels.OrderViewModel
+
+@{
+    ViewData["Title"] = "Pedidos";
+    Layout = "_Layout";
+}
+
+<head>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
+</head>
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <form asp-action="AddEdit" method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <input type="hidden" asp-for="OrderId" id="OrderId" />
+            <h2>@(Model.OrderId == 0 ? "Adicionar" : "Editar") Pedidos</h2>
+
+            <div class="row">
+                <div class="form-group col-md-4">
+                    <label asp-for="CustomerId" class="control-label">Cliente</label>
+                    <select asp-for="CustomerId" class="form-control" asp-items="ViewBag.Customers" id="customerSelect">
+                        <option value="">Selecione um cliente</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label for="vendorName" class="control-label">Vendedor Responsável</label>
+                        <input type="text" id="vendorName" value="@ViewBag.VendorName" class="form-control" readonly>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group col-md-6">
+                <label asp-for="OrderDate" class="control-label">Data do Pedido</label>
+                <input asp-for="OrderDate" class="form-control" type="date" />
+            </div>
+
+            <div id="orderItemsContainer">
+                <h3>Itens do Pedido</h3>
+            </div>
+            <button type="button" id="addItem" class="btn btn-success mb-3">Adicionar Item</button>
+
+            <div class="row">
+                <div class="form-group col-md-2">
+                    <label asp-for="CommissionValuePercent" class="control-label">Comissão (%)</label>
+                    <input asp-for="CommissionValuePercent" class="form-control" placeholder="Percentual de Comissão" />
+                </div>
+                <div class="form-group col-md-2">
+                    <label asp-for="CommissionValue" class="control-label">Valor da Comissão</label>
+                    <div class="input-group">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text">R$</span>
+                        </div>
+                        <input asp-for="CommissionValue" class="form-control" placeholder="Valor da Comissão" readonly />
+                    </div>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group col-md-4">
+                    <label asp-for="Discount" class="control-label">Desconto</label>
+                    <div class="input-group">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text">R$</span>
+                        </div>
+                        <input asp-for="Discount" class="form-control" placeholder="Desconto" />
+                    </div>
+                </div>
+                <div class="form-group col-md-4">
+                    <label asp-for="FinalValue" class="control-label">Valor Final</label>
+                    <div class="input-group">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text">R$</span>
+                        </div>
+                        <input asp-for="FinalValue" class="form-control" placeholder="Valor Final" readonly />
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label asp-for="PaymentMethodId" class="control-label">Forma de pagamento</label>
+                            <select asp-for="PaymentMethodId" class="form-control" asp-items="@ViewBag.PaymentMethods">
+                                <option value="">Selecione uma forma de pagamento</option>
+                            </select>
+                            <span asp-validation-for="PaymentMethodId" class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label asp-for="Observations" class="control-label">Observações</label>
+                            <textarea asp-for="Observations" class="form-control" rows="4"></textarea>
+                            <span asp-validation-for="Observations" class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <button type="submit" class="btn btn-primary">Salvar</button>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            $('#customerSelect').change(function () {
+                var customerId = $(this).val();
+                if (customerId) {
+                    $.ajax({
+                        url: '@Url.Action("GetVendorByCustomer", "Order")',
+                        type: 'GET',
+                        data: { customerId: customerId },
+                        success: function (data) {
+                            $('#vendorName').val(data.vendorName);
+                        },
+                        error: function () {
+                            $('#vendorName').val('');
+                        }
+                    });
+                } else {
+                    $('#vendorName').val('');
+                }
+            });
+
+            function formatNumberWithCommas(number) {
+                return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+            }
+
+            function updateCommissionValue() {
+                var finalValueStr = $('#FinalValue').val().replace(/[^\d,]/g, '').replace(',', '.');
+                var finalValue = parseFloat(finalValueStr) || 0;
+                var commissionPercentageStr = $('#CommissionValuePercent').val().replace(/[^\d,]/g, '').replace(',', '.');
+                var commissionPercentage = parseFloat(commissionPercentageStr) || 0;
+                var commissionValue = (finalValue * commissionPercentage) / 100;
+                $('#CommissionValue').val(formatNumberWithCommas(commissionValue.toFixed(2).replace('.', ',')));
+            }
+
+            function updateFinalValue() {
+                var finalValue = 0;
+
+                $('.order-item').each(function () {
+                    var quantity = parseFloat($(this).find('input[name$=".Quantity"]').val()) || 0;
+                    var valueStr = $(this).find('input[name$=".ValueItem"]').val().replace(/[^\d,]/g, '').replace(',', '.');
+                    var value = parseFloat(valueStr) || 0;
+                    finalValue += value * quantity;
+                });
+
+                var discountStr = $('#Discount').val().replace(/[^\d,]/g, '').replace(',', '.');
+                var discount = parseFloat(discountStr) || 0;
+                finalValue -= discount;
+
+                $('#FinalValue').val(formatNumberWithCommas(finalValue.toFixed(2).replace('.', ',')));
+                updateCommissionValue();
+            }
+
+            var orderItems = @Html.Raw(ViewBag.OrderItemsJson ?? "[]");
+            var products = @Html.Raw(Json.Serialize(ViewBag.Products)) || [];
+
+            if (orderItems.length > 0) {
+                for (var i = 0; i < orderItems.length; i++) {
+                    var item = orderItems[i];
+                    var newItemHtml = createOrderItemHtml(i, item.ProductId, item.Quantity, item.ValueItem);
+                    $('#orderItemsContainer').append(newItemHtml);
+                }
+            }
+
+            function createOrderItemHtml(index, selectedProductId, quantity, valueItem) {
+                var optionsHtml = "";
+                for (var j = 0; j < products.length; j++) {
+                    var product = products[j];
+                    var isSelected = product.value == selectedProductId ? 'selected' : '';
+                    optionsHtml += `<option value="${product.value}" ${isSelected}>${product.text}</option>`;
+                }
+
+                return `<div class="order-item">
+                                                    <div class="form-row">
+                                                        <div class="form-group col-md-6">
+                                                            <select name="OrderItems[${index}].ProductId" class="form-control">
+                                                                ${optionsHtml}
+                                                            </select>
+                                                        </div>
+                                                                            <div class="row">
+
+                                                        <div class="form-group col-md-2">
+                                                            <input type="number" name="OrderItems[${index}].Quantity" class="form-control" value="${quantity}" placeholder="Quantidade" />
+                                                        </div>
+                                                        <div class="form-group col-md-2">
+                                                            <div class="input-group">
+                                                                <div class="input-group-prepend">
+                                                                    <span class="input-group-text">R$</span>
+                                                                </div>
+                                                                <input type="text" name="OrderItems[${index}].ValueItem" class="form-control" value="${formatNumberWithCommas(valueItem.replace('.', ','))}" placeholder="Valor" />
+                                                            </div>
+                                                        </div>
+                                                        </div>
+                                                        <div class="form-group col-md-2">
+                                                            <button type="button" class="removeItem btn btn-danger">Remover</button>
+                                                        </div>
+                                                    </div>
+                                                </div>`;
+            }
+
+            var itemIndex = orderItems.length;
+            $('#addItem').click(function () {
+                var newItemHtml = createOrderItemHtml(itemIndex, '', '', '');
+                $('#orderItemsContainer').append(newItemHtml);
+                itemIndex++;
+            });
+
+            $(document).on('click', '.removeItem', function () {
+                $(this).closest('.order-item').remove();
+                updateFinalValue();
+            });
+
+            $(document).on('input', 'input[name^="OrderItems"][name$=".ValueItem"], input[name$=".Quantity"], input[name="Discount"], input[name="CommissionValuePercent"]', function () {
+                updateFinalValue();
+            });
+
+            $('form').submit(function () {
+            });
+        });
+    </script>
+}

@@ -1,0 +1,225 @@
+﻿@model Domapel.Models.ViewModels.OrderViewModel
+
+@{
+    ViewData["Title"] = "Detalhes do Pedido";
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" href="~/css/sidebar.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/Domapel.styles.css" asp-append-version="true" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        .print-container {
+            margin: 0 auto;
+            width: 100%;
+            max-width: 800px;
+        }
+
+        .table {
+            width: 100%;
+            max-width: 100%;
+        }
+
+            .table th, .table td {
+                border: 1px solid #7F838F;
+                font-size: 10pt;
+            }
+        .info-cliente-table td {
+            padding: 5px;
+        }
+
+            .info-cliente-table td:first-child {
+                font-weight: bold;
+                width: 15%; 
+            }
+
+            .info-cliente-table td:last-child {
+                width: 75%;
+            }
+    </style>
+</head>
+<body>
+    <div id="contentToPrint" class="container mt-5 print-container">
+        <div class="row justify-content-center">
+            <div>
+                <div class="row">
+                    <div class="col-md-4 custom-background">
+                        <div class="form-group">
+                            <label asp-for="OrderId" class="control-label custom-label"><b>Pedido de venda @Model.OrderId</b></label>
+                        </div>
+                    </div>
+                </div>
+                <br />
+                <div class="row">
+                    <div class="col-md-12 custom-background">
+                        <div class="form-group">
+                            <label asp-for="OrderId" class="control-label custom-label">Informações do cliente</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="row justify-content-center">
+                    <div class="col-md-10">
+                        <table class="table table-bordered info-cliente-table">
+                            <tbody>
+                                <tr>
+                                    <td><b>Razão social:</b></td>
+                                    <td>@Model.CorporateName</td>
+                                </tr>
+                                <tr>
+                                    <td><b>Nome Fantasia:</b></td>
+                                    <td>@Model.TradeName</td>
+                                </tr>
+                                <tr>
+                                    <td><b>CNPJ:</b></td>
+                                    <td>@Model.CorporateCNPJ</td>
+                                </tr>
+                                <tr>
+                                    <td><b>Endereço:</b></td>
+                                    <td>@Model.CorporateAdress, @Model.CorporateAdressNumber - @Model.CorporateAdressBairro - @Model.CorporateCity/@Model.CorporateState</td>
+                                </tr>
+                                <tr>
+                                    <td><b>Telefone:</b></td>
+                                    <td>@Model.CorporatePhone</td>
+                                </tr>
+                                <tr>
+                                    <td><b>IE:</b></td>
+                                    <td>@Model.CorporateIE</td>
+                                </tr>
+                                <tr>
+                                    <td><b>Logo:</b></td>
+                                    <td>
+                                        @if (!string.IsNullOrEmpty(ViewBag.ImagePath))
+                                        {
+                                            <img src="@Url.Content(ViewBag.ImagePath)" id="customerImage" alt="Imagem do Cliente" style="max-width: 50%; height: auto;" />
+                                        }
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <br />
+                <div id="orderItemsContainer">
+                    <div class="row">
+                        <div class="col-md-12 custom-background">
+                            <div class="form-group">
+                                <label class="control-label custom-label">Itens do pedido</label>
+                            </div>
+                        </div>
+                    </div>
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Produto</th>
+                                <th>Quantidade</th>
+                                <th>Valor Unitário</th>
+                                <th>Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model.OrderItems)
+                            {
+                                    var quantity = (decimal)item.Quantity;
+                                var valueItem = decimal.Parse(item.ValueItem, new System.Globalization.CultureInfo("pt-BR"));
+                                    var total = quantity * valueItem;
+                                
+
+                                <tr>
+                                    <td>@item.Product.Name</td>
+                                    <td>@item.Quantity</td>
+                                    <td>R$@valueItem.ToString("N2", new System.Globalization.CultureInfo("pt-BR"))</td>
+                                    <td>R$@total.ToString("N2", new System.Globalization.CultureInfo("pt-BR"))</td>
+                                </tr>
+                            }
+
+                            @if (!string.IsNullOrEmpty(Model.Discount) && Model.Discount != "0")
+                            {
+                                var discount = decimal.Parse(Model.Discount, new System.Globalization.CultureInfo("pt-BR"));
+
+                                <tr>
+                                    <td colspan="3" class="text-right"><b>Desconto:</b></td>
+                                    <td>R$@discount.ToString("N2", new System.Globalization.CultureInfo("pt-BR"))</td>
+                                </tr>
+                            }
+
+                            <tr>
+                                <td colspan="3" class="text-right"><b>Valor Final:</b></td>
+                                <td>R$@Model.FinalValue</td>
+                            </tr>
+                        </tbody>
+
+
+
+
+                    </table>
+                </div>
+                <br />
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="form-group">
+                            <label asp-for="PaymentMethodId" class="control-label"><b>Forma de pagamento:</b> @Model.PaymentMethodName</label>
+                        </div>
+                        <div class="form-group">
+                            <label asp-for="Observations" class="control-label"><b>Observações</b></label>
+                            <p>@Model.Observations</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+
+            window.print(); // Chama o pop-up de impressão ao carregar a página
+
+            const { jsPDF } = window.jspdf;
+
+            function generatePDF() {
+                const content = document.getElementById('contentToPrint');
+
+                if (!content) {
+                    console.error('Elemento com ID "contentToPrint" não encontrado.');
+                    return;
+                }
+
+                html2canvas(content).then(canvas => {
+                    const imgData = canvas.toDataURL('image/png');
+                    const pdf = new jsPDF('p', 'mm', 'a4');
+
+                    const margin = 10; // Margem em mm
+                    const topMargin = 20; // Margem superior em mm
+                    const imgWidth = 210 - 2 * margin; // Largura da página A4 menos as margens
+                    const pageHeight = 295;
+                    const imgHeight = canvas.height * imgWidth / canvas.width;
+                    let heightLeft = imgHeight;
+
+                    let position = topMargin; // Ajuste da margem superior
+
+                    pdf.addImage(imgData, 'PNG', margin, position, imgWidth, imgHeight);
+                    heightLeft -= (pageHeight - topMargin);
+
+                    while (heightLeft >= 0) {
+                        position = heightLeft - imgHeight + topMargin;
+                        pdf.addPage();
+                        pdf.addImage(imgData, 'PNG', margin, position, imgWidth, imgHeight);
+                        heightLeft -= pageHeight;
+                    }
+
+                    pdf.save('documento.pdf');
+                }).catch(error => {
+                    console.error('Erro ao gerar PDF:', error);
+                });
+            }
+
+            document.getElementById('generatePdfBtn').addEventListener('click', generatePDF);
+        });
+    </script>
+</body>
+</html>

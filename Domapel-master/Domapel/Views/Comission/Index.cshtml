@@ -1,0 +1,149 @@
+﻿@model Domapel.Models.ComissionVendor
+@{
+    ViewData["Title"] = "Comissões";
+    Layout = "_Layout";
+}
+
+<head>
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/Domapel.styles.css" asp-append-version="true" />
+</head>
+
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-8">
+            <h2>Comissões</h2>
+            <form asp-action="GetCommissionsByVendorAndOrderRange" method="post">
+                <div class="d-flex justify-content-start">
+                    <div class="form-group" style="margin-right: 20px;">
+                        <label for="SelectedVendorId">Selecionar Vendedor:</label>
+                        <select asp-for="SelectedVendorId" asp-items="Model.Vendors" class="form-control" style="width: 200px;"></select>
+                    </div>
+
+                    <div class="form-group" style="margin-right: 20px;">
+                        <label for="OrderRangeStart">Pedido Inicial:</label>
+                        <input type="number" asp-for="OrderRangeStart" class="form-control" style="width: 120px;" />
+                    </div>
+
+                    <div class="form-group">
+                        <label for="OrderRangeEnd">Pedido Final:</label>
+                        <input type="number" asp-for="OrderRangeEnd" class="form-control" style="width: 120px;" />
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary mt-3">Buscar Comissões</button>
+            </form>
+
+            <br /><br />
+            @if (Model.Orders != null && Model.Orders.Count > 0)
+            {
+                <h3>Pedidos do Vendedor:</h3>
+                <table class="table custom-table">
+                    <thead>
+                        <tr>
+                            <th>Vendedor</th>
+                            <th>OrderId</th>
+                            <th class="nowrap">Data</th>
+                            <th class="nowrap">Cliente</th>
+                            <th class="nowrap">Valor</th>
+                            <th class="nowrap">Comissão</th>
+                            <th class="nowrap">Percentual</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var order in Model.Orders)
+                        {
+                            <tr>
+                                <td>@order.VendorName</td>
+                                <td>@order.OrderId</td>
+                                <td>@order.OrderDate.ToShortDateString()</td>
+                                <td class="nowrap">@order.CorporateName</td>
+                                <td>@order.FinalValue</td>
+                                <td>@String.Format("{0:F2}", order.CommissionValue)</td>
+                                <td>@order.CommissionValuePercent %</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+                <br />
+                <h4>Total de Comissões: R$ @String.Format("{0:N2}", @Model.TotalCommissions)</h4>
+
+
+                <button id="download-pdf" class="btn btn-secondary mt-3">Baixar PDF</button>
+            }
+        </div>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
+
+<script>
+    function generatePdf() {
+        const { jsPDF } = window.jspdf;
+
+        if (!jsPDF.API.autoTable) {
+            console.error("autoTable plugin não está carregado.");
+            return;
+        }
+
+        const doc = new jsPDF({
+            unit: 'mm',
+            format: 'a4',
+            orientation: 'landscape'
+        });
+
+        doc.text("Relatório de Comissões", 10, 10);
+
+        const orders = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.Orders));
+        const totalCommissions = "@String.Format("{0:N2}", @Model.TotalCommissions)";
+
+        if (!orders || orders.length === 0) {
+            console.error("Nenhum dado encontrado para gerar o PDF.");
+            return;
+        }
+
+        const bodyData = orders.map(order => [
+            order.VendorName || "N/A",
+            order.OrderId || "N/A",
+            order.OrderDate ? new Date(order.OrderDate).toLocaleDateString() : "N/A",
+            order.CorporateName || "N/A",
+            "R$" + order.FinalValue || "N/A",
+            "R$" + order.CommissionValue || "N/A",
+            (order.CommissionValuePercent || 0) + '%'
+        ]);
+
+        bodyData.push([
+            '', '', '', '', '',  `R$ ${totalCommissions}`
+        ]);
+
+        const columnWidths = [
+            { cellWidth: 40 },
+            { cellWidth: 30 },
+            { cellWidth: 30 },
+            { cellWidth: 60 },
+            { cellWidth: 30 },
+            { cellWidth: 35 },
+            { cellWidth: 25 }
+        ];
+
+        doc.autoTable({
+            head: [['Vendedor', 'Pedido', 'Data Pedido', 'Cliente', 'Valor Final', 'Comissão', 'Percentual']],
+            body: bodyData,
+            margin: { top: 20 },
+            theme: 'striped',
+            columnStyles: columnWidths.reduce((styles, width, index) => {
+                styles[index] = width;
+                return styles;
+            }, {}),
+            didDrawCell: function (data) {
+                console.log(data);
+            }
+        });
+
+        doc.save('Comissoes.pdf');
+    }
+
+
+    document.getElementById('download-pdf').addEventListener('click', generatePdf);
+</script>

@@ -1,0 +1,37 @@
+﻿@model Domapel.Models.Vendor
+@{
+    ViewData["Title"] = "Vendedores";
+    Layout = "_Layout";
+}
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+
+<h2>@(Model.VendorId == 0 ? "Adicionar" : "Editar") Vendedor</h2>
+
+<form asp-action="AddEdit">
+    <input type="hidden" asp-for="VendorId" />
+    <div class="form-group">
+        <label asp-for="Name" class="control-label"></label>
+        <input asp-for="Name" class="form-control" />
+        <span asp-validation-for="Name" class="text-danger"></span>
+    </div>
+    <div class="form-group">
+        <label asp-for="Phone" class="control-label"></label>
+        <input asp-for="Phone" id="Phone" class="form-control" />
+        <span asp-validation-for="Phone" class="text-danger"></span>
+    </div>
+    <div class="form-group">
+        <label asp-for="Pix" class="control-label"></label>
+        <input asp-for="Pix" class="form-control" />
+        <span asp-validation-for="Pix" class="text-danger"></span>
+    </div>
+    <button type="submit" class="btn btn-primary">@((Model.VendorId == 0) ? "Adicionar" : "Salvar Alterações")</button>
+</form>
+@section Scripts {
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            $('#Phone').mask('(00) 00000-0000');
+        });
+    </script>
+}

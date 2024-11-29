@@ -1,0 +1,108 @@
+﻿@model IEnumerable<Domapel.Models.PaymentMethod>
+
+@{
+    ViewData["Title"] = "Formas de pagamento";
+    Layout = "_Layout";
+}
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+
+<h2>Formas de pagamento</h2>
+
+
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Forma de pagamento</th>
+            <th>Ações</th>
+        </tr>
+    </thead>
+    <tbody>
+        <a asp-action="AddEdit" class="btn btn-success">Adicionar Nova forma de pagamento</a>
+        <br />
+        <br />
+        <br />
+        <br />
+
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@Html.DisplayFor(modelItem => item.PaymentMethodId)</td>
+                <td>@Html.DisplayFor(modelItem => item.PaymentMethodName)</td>
+                <td>
+                    <a asp-action="AddEdit" asp-route-id="@item.PaymentMethodId" class="btn btn-primary">Editar</a>
+                    <a href="#" class="btn btn-danger delete-paymentMethod"
+                       data-paymentMethod-id="@item.PaymentMethodId"
+                       data-delete-url="@Url.Action("DeleteConfirmed", "PaymentMethod", new { id = item.PaymentMethodId })"
+                       data-toggle="modal"
+                       data-target="#deleteConfirmationModal">Deletar</a>
+
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+<div class="modal fade" id="deleteConfirmationModal" tabindex="-1" role="dialog" aria-labelledby="deleteConfirmationModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteConfirmationModalLabel">Confirmar Exclusão</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                Tem certeza de que deseja excluir esta forma de pagamento?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                <form id="deleteForm" method="post" action="" style="display: none;">
+                    @Html.AntiForgeryToken()
+                </form>
+                <button type="button" class="btn btn-danger" form="deleteForm" id="confirmDelete">Excluir</button>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    <script>
+        var paymentMethodIdToDelete;
+
+        $(document).ready(function () {
+            $('.delete-paymentMethod').on('click', function (e) {
+                e.preventDefault();
+                paymentMethodIdToDelete = $(this).data('paymentmethod-id');
+            });
+
+            $('#confirmDelete').on('click', function () {
+                $.ajax({
+                    url: '@Url.Action("DeleteConfirmed", "PaymentMethod")',
+                    type: 'POST',
+                    data: {
+                        id: paymentMethodIdToDelete,
+                        __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
+                    },
+                    success: function (result) {
+                        if (result.success) {
+                            $('#deleteConfirmationModal').modal('hide');
+                            window.location.reload();
+                        } else {
+                            alert(result.message);
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        console.error("Erro ao excluir a forma de pagamento:", error);
+                    }
+                });
+            });
+        });
+    </script>
+}
+

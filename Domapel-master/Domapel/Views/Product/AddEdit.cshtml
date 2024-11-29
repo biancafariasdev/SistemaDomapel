@@ -1,0 +1,18 @@
+﻿@model Domapel.Models.Product
+@{
+    ViewData["Title"] = "Produtos";
+    Layout = "_Layout";
+}
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+
+<h2>@(Model.ProductId == 0 ? "Adicionar" : "Editar") Produtos</h2>
+
+<form asp-action="AddEdit">
+    <input type="hidden" asp-for="ProductId" />
+    <div class="form-group">
+        <label asp-for="Name"></label>
+        <input asp-for="Name" class="form-control" />
+        <span asp-validation-for="Name" class="text-danger"></span>
+    </div>
+    <button type="submit" class="btn btn-primary">@((Model.ProductId == 0) ? "Adicionar" : "Salvar Alterações")</button>
+</form>

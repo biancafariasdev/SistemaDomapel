@@ -1,0 +1,73 @@
+﻿@model Domapel.Models.PaymentMethod
+@{
+    ViewData["Title"] = "Formas de pagamento";
+    Layout = "_Layout";
+}
+
+<style>
+    body {
+        margin: 0;
+        padding: 0;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    .container {
+        max-width: 1200px; 
+        margin: 0 auto;
+        padding: 0;
+        padding-left: 0%;
+        padding-right: 23%;
+        margin-right: 34%;
+    }
+
+    .container-fluid {
+        padding: 0;
+    }
+
+    .row {
+        margin: 0; 
+    }
+
+    .col-md-12, .col-md-8 {
+        padding: 0; 
+    }
+
+    h2, .form-group, .form-check {
+        text-align: left;
+    }
+
+        .form-group label,
+        .form-group input {
+            display: block;
+            width: 100%;
+        }
+
+    .btn-primary {
+        display: block;
+        width: 100%;
+        text-align: center;
+        padding: 10px;
+    }
+
+</style>
+<input type="text" hidden value="@Model.PaymentMethodId" id="PaymentMethodId" />
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-8">
+            <h2>@(Model.PaymentMethodId == 0 ? "Adicionar" : "Editar") Forma de pagamento</h2>
+            <br><br />
+            <form asp-action="AddEdit" method="post" enctype="multipart/form-data">
+                <input type="hidden" asp-for="PaymentMethodId" />
+
+                <div class="form-group">
+                    <label asp-for="PaymentMethodName" class="control-label">Forma de pagamento</label>
+                    <input asp-for="PaymentMethodName" class="form-control" />
+                    <span asp-validation-for="PaymentMethodName" class="text-danger"></span>
+                </div>
+
+                <br />
+                <button type="submit" class="btn btn-primary">@((Model.PaymentMethodId == 0) ? "Adicionar" : "Salvar Alterações")</button>
+            </form>
+        </div>
+    </div>
+</div>
